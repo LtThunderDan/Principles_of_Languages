@@ -1,0 +1,172 @@
+(load "point.scm")
+(load "centroids.scm")
+(load "list.scm")
+(load "cpoint.scm")
+
+
+;  class-size:  int list -> int
+;        
+(define class-size
+  (lambda (Int L1)
+    (if (empty? L1)
+        0
+        (if (= (cdr(first L1)) Int)
+            (+ 1 (class-size Int (rest L1)))
+            (+ 0 (class-size Int (rest L1)))))))
+
+(define class-sum
+  (lambda (Int L1)
+    (if (empty? L1)
+        '(0 0)
+        (append (list(helper-sum-x Int L1)) (list(helper-sum-y Int L1))))))
+
+(define helper-sum-x
+  (lambda (Int L1)
+    (if ( empty? L1)
+        0
+        (if (= (cdr(first L1)) Int)
+            (+ (first(first(first L1))) (helper-sum-x Int (rest L1)))
+            (+ 0 (helper-sum-x Int (rest L1)))))))
+
+(define helper-sum-y
+  (lambda (Int L1)
+    (if ( empty? L1)
+        0
+        (if (= (cdr(first L1)) Int)
+            (+ (first(reverse(first(first L1)))) (helper-sum-y Int (rest L1)))
+            (+ 0 (helper-sum-y Int (rest L1)))))))
+
+(define get-centroid
+  (lambda (Int L1)
+    (append (list (/ (helper-sum-x Int L1) (class-size Int L1))) (list(/ (helper-sum-y Int L1) (class-size Int L1))))))
+
+
+
+(define get-centroids
+  (lambda (Int L1)
+    (help-get-centroids Int 0 L1)))
+
+(define help-get-centroids
+  (lambda (Int Int2 L1)
+    (if (= Int2 Int)
+        empty
+        (append (list(get-centroid Int2 L1)) (help-get-centroids Int (+ Int2 1) L1)))))
+
+(get-centroid 1 cpoints)
+;(define get-centroids2
+;  (lambda (Int L1)
+;    (reverse(help-get-centroids2 Int L1))))
+
+;(define help-get-centroids2
+;  (lambda (Int L1)
+;    (if (= 0 Int)
+;        empty
+;        (append (list(get-centroid (- Int 1) L1)) (help-get-centroids2 (- Int 1) L1)))))
+
+
+
+
+(define get-class
+  (lambda (cp centroids)
+    (if (empty? centroids)
+        0
+        (list-index (find-min (get-dis-list cp centroids)) (list-map exact->inexact(get-dis-list cp centroids))))))
+
+(define get-dis-list
+  (lambda (cp centroids)
+    (if (empty? centroids)
+        empty
+        (append (list(p-dist (first cp) (first centroids))) (get-dis-list cp (rest centroids))))))
+
+(define find-min
+  (lambda (L1)
+    (list-min L1)))
+
+
+
+;(define class-update
+ ; (lambda (cp cent)
+  ;  (if (empty? cp)
+   ;     empty
+;        (append (list-map (myfunc (first cp) cent) (list(car(first cp)))) (class-update (rest cp) cent)))))
+
+
+
+;(define myfunc
+ ; (lambda (cp cent)
+  ;  (cons (first cp) (get-class cp cent))))
+
+;(list-map get-class centroids cpoint)
+
+(define make-helper
+  (lambda (centroids)
+    (lambda (cpoint)
+      (cons (car cpoint) (get-class cpoint centroids)))))
+
+(define class-update
+  (lambda (cpoint centroids)
+    (list-map (make-helper centroids) cpoint)))
+
+
+(define repeat
+  (lambda (count f init)
+    (if (= count 0)
+        init
+        (repeat (- count 1) f (f init)))))
+
+;(class-update cpoints cent)
+
+(define k-means
+  (lambda (k points count)
+    (let ((cent (initial-centroids k points)) (cp (initial-cpoints points)))
+      (let (( ucp (class-update cp cent)))
+       (repeat count (myfunc k) (cons ucp (get-centroids k ucp)))))))
+
+
+ ;
+
+
+
+(define myfunc
+  (lambda(k)
+     (lambda (p)
+       (let ((ucp (class-update (car p) (cdr p))))
+        (cons ucp (get-centroids k ucp))))))
+
+
+      ;(cons (repeat count (k-means-helper k cent) cp)cent))))
+
+(define initial-cpoints
+  (lambda (points)
+    (if (empty? points)
+        empty
+        (cons (point->cpoint (car points)) (initial-cpoints (cdr points))))))
+
+;(define k-means-helper
+ ; (lambda (k centroids)
+  ;  (lambda (cpoints)
+   ;   (class-update cpoints centroids))))
+
+
+
+
+
+
+
+
+
+; pass in a pair to repeat and update cpoints then centroids
+
+
+
+
+;(define k-means-helper
+ ; (lambda (centroids cpoints k)
+  ;   ((cons (repeat k (lambda (cp)
+   ;                     (let ((cent (centroids)))
+    ;                    (class-update cp cent))) cpoints) centroids))))
+;(define k-means-helper
+;  (lambda (centroids cpoints k) 
+;    (cons (class-update cpoints centroids)centroids )
+              
+
